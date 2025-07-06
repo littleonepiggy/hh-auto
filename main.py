@@ -287,9 +287,12 @@ class HHResponder(HHScraper):
                     self._click_relocation_warning_confirm()
 
                 if self._has_textarea():
-                    print("📝 Обнаружено поле для ввода текста.")
-                    self._fill_response_text()
-                    self._click_second_button()
+                    if self.response_text == "":
+                        print("⚠️ Текст отклика не задан. Будет отправлен простой отклик.")
+                    else:
+                        print("📝 Обнаружено поле для ввода текста.")
+                        self._fill_response_text()
+                        self._click_second_button()
                 else:
                     print("📭 Поле для текста не найдено. Будет отправлен простой отклик.")
 
