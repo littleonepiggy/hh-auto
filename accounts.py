@@ -54,7 +54,6 @@ def add_new_account_cookies(driver: WebDriver) -> str:
     dirs = list_account_dirs()
     existing = [d for d in dirs if d.rsplit("_", 1)[0] == base_name]
     if existing:
-        # Use the latest one
         name = existing[-1]
         print(f"⚠️  Аккаунт с именем '{base_name}' уже существует. Будет обновлён: {name}")
     else:

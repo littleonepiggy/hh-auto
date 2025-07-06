@@ -7,7 +7,6 @@ from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 from accounts import save_cookies, load_cookies, add_new_account_cookies, select_account, get_account_settings, show_accounts
 import time
 import random
-import json
 import os
 import argparse
 
@@ -36,11 +35,13 @@ class HHScraper():
 
     def is_logged_in(self):
         self.driver.get("https://hh.ru")
-        time.sleep(2)
-        return "logout" in self.driver.page_source.lower()
-
+        try:
+            self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '[data-qa="multiaccount-infotip"]')))
+            return True
+        except:
+            return False
+        
     def ensure_login(self):
-        self.driver.get("https://hh.ru")
 
         if not self.account_path or not os.path.exists(os.path.dirname(os.path.abspath(self.account_path))):
             print("⚠️ Cookies не найдены. Войдите вручную.")
@@ -307,7 +308,9 @@ class HHResponder(HHScraper):
         self.driver.quit()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="HH.ru Вакансии парсер + автокликер")
+    from accounts import list_account_dirs
+
+    parser = argparse.ArgumentParser(description="HH.ru парсер и автокликер вакансий")
     parser.add_argument("--max-pages", type=int, default=5, help="Максимум страниц на каждый URL")
     parser.add_argument("--account", type=str, help="Номер аккаунта из списка (1, 2, 3...)")
     parser.add_argument("--accounts", action="store_true", help="Вывести список доступных аккаунтов")
@@ -315,6 +318,16 @@ if __name__ == "__main__":
     parser.add_argument("--add-account", action="store_true", help="Добавить новый аккаунт и сохранить его cookies")
 
     args = parser.parse_args()
+
+    account_dirs = list_account_dirs() 
+    if not account_dirs and not args.add_account:
+        print("⚠️ Нет ни одного аккаунта. Необходимо добавить новый аккаунт.")
+        options = Options()
+        driver = webdriver.Chrome(options=options)
+        add_new_account_cookies(driver)
+        driver.quit()
+        print("✅ Новый аккаунт добавлен. Перезапустите скрипт.")
+        exit(0)
 
     if args.accounts:
         show_accounts()
